@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AviaSoulsTest {
@@ -16,17 +16,21 @@ public class AviaSoulsTest {
 
     @Test
     public void testSearchSortByPrice() {
-        // проверяем, что найденные билеты сортируются от дешевых к дорогим
         AviaSouls manager = new AviaSouls();
-        manager.add(new Ticket("LED", "KZN", 5000, 10, 12)); // Третий
-        manager.add(new Ticket("LED", "KZN", 3000, 11, 13)); // Первый
-        manager.add(new Ticket("LED", "KZN", 4000, 12, 14)); // Второй
+        Ticket ticket1 = new Ticket("LED", "KZN", 3000, 11, 13); // 1-й по цене
+        Ticket ticket2 = new Ticket("LED", "KZN", 4000, 12, 14); // 2-й
+        Ticket ticket3 = new Ticket("LED", "KZN", 5000, 10, 12); // 3-й
 
+        manager.add(ticket3);
+        manager.add(ticket1);
+        manager.add(ticket2);
+
+        Ticket[] expected = {ticket1, ticket2, ticket3};
         Ticket[] result = manager.search("LED", "KZN");
-        assertEquals(3000, result[0].getPrice()); // Самый дешёвый первый
-        assertEquals(4000, result[1].getPrice()); // Средний
-        assertEquals(5000, result[2].getPrice()); // Самый дорогой последний
+
+        assertArrayEquals(expected, result);
     }
+
 
     @Test
     public void testTimeComparator() {
@@ -40,41 +44,44 @@ public class AviaSoulsTest {
 
     @Test
     public void testSearchAndSortByTime() {
-        // проверяем сортировку билетов от быстрых к медленным
         AviaSouls manager = new AviaSouls();
-        manager.add(new Ticket("LED", "KZN", 5000, 10, 12)); // 2 часа
-        manager.add(new Ticket("LED", "KZN", 3000, 11, 15)); // 4 часа
-        manager.add(new Ticket("LED", "KZN", 4000, 9, 10));  // 1 час
+        Ticket ticket1 = new Ticket("LED", "KZN", 4000, 9, 10);   // 1 час
+        Ticket ticket2 = new Ticket("LED", "KZN", 5000, 10, 12);  // 2 часа
+        Ticket ticket3 = new Ticket("LED", "KZN", 3000, 11, 15);  // 4 часа
 
+        manager.add(ticket2);
+        manager.add(ticket3);
+        manager.add(ticket1);
+
+        Ticket[] expected = {ticket1, ticket2, ticket3};
         Ticket[] result = manager.searchAndSortBy("LED", "KZN", new TicketTimeComparator());
-        assertEquals(1, result[0].getTimeTo() - result[0].getTimeFrom()); // Самый быстрый первый (1 час)
-        assertEquals(2, result[1].getTimeTo() - result[1].getTimeFrom()); // Второй (2 часа)
-        assertEquals(4, result[2].getTimeTo() - result[2].getTimeFrom()); // Самый долгий последний (4 часа)
+
+        assertArrayEquals(expected, result);
     }
 
     @Test
     public void testFindTicket() {
-        // проверяем поиск билета по маршруту
         AviaSouls manager = new AviaSouls();
+        Ticket expectedTicket = new Ticket("LED", "KZN", 3000, 11, 13);
+
         manager.add(new Ticket("LED", "SVO", 2000, 8, 10));
-        manager.add(new Ticket("LED", "KZN", 3000, 11, 13));
+        manager.add(expectedTicket);
         manager.add(new Ticket("SVO", "LED", 2500, 9, 11));
 
+        Ticket[] expected = {expectedTicket};
         Ticket[] result = manager.search("LED", "KZN");
-        assertEquals(1, result.length); // найден только один билет по маршруту LED-KZN
-        assertEquals("LED", result[0].getFrom());
-        assertEquals("KZN", result[0].getTo());
-        assertEquals(3000, result[0].getPrice());
+
+        assertArrayEquals(expected, result);
     }
 
     @Test
     public void testNoMatchingTickets() {
-        // тест на отсутствие билетов при несовпадающем маршруте
         AviaSouls manager = new AviaSouls();
         manager.add(new Ticket("LED", "KZN", 3000, 10, 12));
+
+        Ticket[] expected = new Ticket[0];
         Ticket[] result = manager.search("SVO", "LED");
-        assertEquals(0, result.length);
+
+        assertArrayEquals(expected, result);
     }
-
-
 }
